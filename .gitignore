@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Data (keep schema, not contents)
+data/raw/
+data/interim/
+data/processed/
+*.csv
+*.parquet
+*.pkl
+!data/example_*.csv
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

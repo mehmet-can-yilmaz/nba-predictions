@@ -1,0 +1,6 @@
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+matplotlib>=3.8
+scikit-learn>=1.3   # used only for cross-validation utilities and as a reference sanity check
+requests>=2.31      # for data ingestion stubs
