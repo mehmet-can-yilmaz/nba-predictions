@@ -61,11 +61,13 @@ def main() -> None:
     print(f"[info] ELO log-loss on full sample: {metrics.log_loss(games['p_home_elo'].to_numpy() > 0, games['p_home_elo']):.4f}")
 
     # 3. Rolling features -------------------------------------------------
-    feats = features.build_game_features(games[[
-        "game_id", "date", "season", "home", "away", "home_score", "away_score",
+    core_cols = ["game_id", "date", "season", "home", "away", "home_score", "away_score"]
+    optional_cols = [
         "fga_home", "fga_away", "fta_home", "fta_away",
         "oreb_home", "oreb_away", "tov_home", "tov_away",
-    ]], window=args.window)
+    ]
+    keep = core_cols + [c for c in optional_cols if c in games.columns]
+    feats = features.build_game_features(games[keep], window=args.window)
     feats = feats.merge(games[["game_id", "elo_logit", "p_home_elo"]], on="game_id")
 
     train, test = features.chronological_split(feats, holdout_frac=args.holdout)

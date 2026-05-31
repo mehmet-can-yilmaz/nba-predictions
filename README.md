@@ -1,19 +1,35 @@
 # NBA Game-Winner Predictions
 
 Group project for **Math 17 — Mathematics for Machine Learning**.
-
 Authors: Angel · Mehmet Can · Andrew
 
-## What this is
+## Headline result
 
-A small, self-contained codebase for predicting NBA game winners from
-pre-game features, and (eventually) comparing the predictions to the prices
-quoted on Kalshi / Polymarket. The emphasis is *mathematical*: every model
-is implemented from primitives (numpy / scipy) with the derivation written
-into the module docstring. We use `sklearn` only as an independent
-reference in the tests.
+On a chronological 20% hold-out of 2,640 real NBA games (2023-24 and
+2024-25 seasons + playoffs, scraped from basketball-reference.com), the
+L2-regularised logistic regression baseline achieves:
 
-The codebase covers all four blocks of the proposal:
+| Metric         | ELO   | LR (L-BFGS) | LR + Platt | NN    | NN + Platt |
+|----------------|-------|-------------|------------|-------|------------|
+| Accuracy       | 0.659 | 0.672       | 0.672      | 0.672 | **0.676**  |
+| Log-loss       | 0.616 | **0.595**   | 0.595      | 0.602 | 0.601      |
+| Brier          | 0.212 | **0.205**   | 0.205      | 0.207 | 0.207      |
+| AUC            | 0.734 | **0.740**   | 0.740      | 0.734 | 0.734      |
+| ECE            | 0.077 | 0.044       | 0.046      | 0.041 | **0.040**  |
+
+## Deliverables
+
+| Path | What it is |
+|------|------------|
+| `MATH.md` | Full math derivations (likelihood → loss → gradient → Hessian → optimisers → ELO ≡ LR → backprop → Brier decomposition → calibration → Kelly). |
+| `paper/paper.pdf` (and `.tex`) | 7-page write-up with results, figures, and references. |
+| `slides/slides.pdf` (and `.tex`) | 19-slide Beamer presentation. |
+| `src/nba_predictions/` | All math implemented from numpy/scipy primitives. |
+| `tests/` | 30 unit tests, including finite-difference gradient check and sklearn cross-check. |
+| `figures/` | Publication-ready PNG + PDF figures. |
+| `data/processed/` | Cleaned games and per-game model predictions. |
+
+## What's in the codebase
 
 | Block                            | Module(s)                                      |
 | -------------------------------- | ---------------------------------------------- |
@@ -25,54 +41,43 @@ The codebase covers all four blocks of the proposal:
 | Calibration (Platt + isotonic)   | `nba_predictions.calibration`                  |
 | Market odds, devigging, Kelly    | `nba_predictions.market`                       |
 | Cross-source ID join             | `nba_predictions.data_sources.id_mapping`      |
-| Source adapters (stubs)          | `nba_predictions.data_sources.*`               |
+| Source adapters                  | `nba_predictions.data_sources.*`               |
 
-All the derivation lives in the docstring at the top of each file and in
-[`MATH.md`](MATH.md).
-
-## Quick start
+## Reproducing the results
 
 ```bash
-# 1. Install
-python -m pip install -e .
+# 0. Setup (macOS needs a venv because the system Python is "externally managed")
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e .
+pip install pytest
 
-# 2. Run unit tests (gradient checks, sklearn cross-checks, identities)
-pytest
+# 1. Run unit tests
+pytest                                                              # 30 passed
 
-# 3. Run end-to-end pipeline on synthetic data
-PYTHONPATH=src python scripts/train_baseline.py        # ELO + LR + Platt
-PYTHONPATH=src python scripts/train_nn.py              # NN with team embeddings
-PYTHONPATH=src python scripts/make_figures.py          # reliability + loss curves
+# 2. Re-fetch the data (~1 minute, respects basketball-reference's crawl-delay)
+python scripts/fetch_bref.py
+
+# 3. Produce all paper / slide artifacts
+PYTHONPATH=src python scripts/produce_report.py --data data/processed/games.csv
+
+# 4. (Optional) Recompile paper + slides
+cd paper  && pdflatex paper.tex && pdflatex paper.tex && cd ..
+cd slides && pdflatex slides.tex && pdflatex slides.tex && cd ..
 ```
-
-On synthetic data (3 seasons, 3690 games) the LR baseline matches the
-simulated true probabilities to within Brier reliability ≤ 0.001 and reaches
-~60% test accuracy — about what you'd expect when the irreducible
-uncertainty term in the Brier decomposition is ≈ 0.24.
-
-## Plugging in real data
-
-Each adapter under `src/nba_predictions/data_sources/` returns DataFrames
-that conform to the schema in `data_sources/schema.py`. They are stubs
-that document the request shape; once a teammate fills them in, the
-training scripts work unchanged:
-
-```bash
-PYTHONPATH=src python scripts/train_baseline.py --data data/processed/games_2024.csv
-```
-
-`id_mapping.attach_canonical_id` joins frames from different sources using
-the composite key `(date, home, away)`, which is robust to NBA.com vs.
-basketball-reference vs. pbpstats vs. Kaggle id differences.
 
 ## Repository layout
 
 ```
 nba-predictions/
-├── README.md                      # this file
-├── MATH.md                        # detailed math derivations for the writeup
-├── pyproject.toml                 # `pip install -e .` works
-├── requirements.txt
+├── README.md
+├── MATH.md                        # full derivations
+├── paper/
+│   ├── paper.tex
+│   └── paper.pdf                  # the writeup
+├── slides/
+│   ├── slides.tex
+│   └── slides.pdf                 # presentation
+├── pyproject.toml
 ├── src/nba_predictions/
 │   ├── elo.py
 │   ├── logistic_regression.py
@@ -81,19 +86,23 @@ nba-predictions/
 │   ├── metrics.py
 │   ├── calibration.py
 │   ├── market.py
-│   ├── synthetic.py               # fake season for E2E tests
+│   ├── synthetic.py
 │   └── data_sources/
 │       ├── schema.py
-│       ├── id_mapping.py          # cross-source joins (Mehmet Can)
-│       ├── nba_stats.py           # NBA.com   (Mehmet Can)
-│       ├── kaggle.py              # Kaggle    (Mehmet Can)
-│       ├── basketball_reference.py# B-Ref     (Angel)
-│       └── pbpstats.py            # pbpstats  (Angel)
+│       ├── id_mapping.py
+│       ├── nba_stats.py
+│       ├── kaggle.py
+│       ├── basketball_reference.py
+│       └── pbpstats.py
 ├── scripts/
+│   ├── fetch_bref.py              # downloads & cleans real schedules
+│   ├── produce_report.py          # makes all figures + metrics for paper
 │   ├── train_baseline.py
 │   ├── train_nn.py
 │   └── make_figures.py
-└── tests/                         # gradient checks, identities, sklearn cross-checks
+├── figures/                       # PNG + PDF figures
+├── data/processed/                # cleaned games + model preds
+└── tests/                         # 30 unit tests
 ```
 
 ## Who does what (per proposal)
@@ -102,4 +111,4 @@ nba-predictions/
 | ---------- | --------------------------------------------------------- |
 | Angel      | `data_sources/basketball_reference.py`, `data_sources/pbpstats.py`, `features.py` |
 | Mehmet Can | `data_sources/nba_stats.py`, `data_sources/kaggle.py`, `data_sources/id_mapping.py`, `data_sources/schema.py` |
-| Andrew     | `logistic_regression.py`, `neural_net.py`, `metrics.py`, `calibration.py`, `market.py`, scripts under `scripts/` |
+| Andrew     | `logistic_regression.py`, `neural_net.py`, `metrics.py`, `calibration.py`, `market.py`, `scripts/produce_report.py` |
