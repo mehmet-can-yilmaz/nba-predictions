@@ -17,17 +17,6 @@ L2-regularised logistic regression baseline achieves:
 | AUC            | 0.734 | **0.740**   | 0.740      | 0.734 | 0.734      |
 | ECE            | 0.077 | 0.044       | 0.046      | 0.041 | **0.040**  |
 
-## Deliverables
-
-| Path | What it is |
-|------|------------|
-| `MATH.md` | Full math derivations (likelihood → loss → gradient → Hessian → optimisers → ELO ≡ LR → backprop → Brier decomposition → calibration → Kelly). |
-| `paper/paper.pdf` (and `.tex`) | 7-page write-up with results, figures, and references. |
-| `slides/slides.pdf` (and `.tex`) | 19-slide Beamer presentation. |
-| `src/nba_predictions/` | All math implemented from numpy/scipy primitives. |
-| `tests/` | 30 unit tests, including finite-difference gradient check and sklearn cross-check. |
-| `figures/` | Publication-ready PNG + PDF figures. |
-| `data/processed/` | Cleaned games and per-game model predictions. |
 
 ## What's in the codebase
 
@@ -105,10 +94,3 @@ nba-predictions/
 └── tests/                         # 30 unit tests
 ```
 
-## Who does what (per proposal)
-
-| Person     | Code surface                                              |
-| ---------- | --------------------------------------------------------- |
-| Angel      | `data_sources/basketball_reference.py`, `data_sources/pbpstats.py`, `features.py` |
-| Mehmet Can | `data_sources/nba_stats.py`, `data_sources/kaggle.py`, `data_sources/id_mapping.py`, `data_sources/schema.py` |
-| Andrew     | `logistic_regression.py`, `neural_net.py`, `metrics.py`, `calibration.py`, `market.py`, `scripts/produce_report.py` |
