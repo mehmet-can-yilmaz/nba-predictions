@@ -54,43 +54,6 @@ cd paper  && pdflatex paper.tex && pdflatex paper.tex && cd ..
 cd slides && pdflatex slides.tex && pdflatex slides.tex && cd ..
 ```
 
-## Repository layout
 
-```
-nba-predictions/
-├── README.md
-├── MATH.md                        # full derivations
-├── paper/
-│   ├── paper.tex
-│   └── paper.pdf                  # the writeup
-├── slides/
-│   ├── slides.tex
-│   └── slides.pdf                 # presentation
-├── pyproject.toml
-├── src/nba_predictions/
-│   ├── elo.py
-│   ├── logistic_regression.py
-│   ├── neural_net.py
-│   ├── features.py
-│   ├── metrics.py
-│   ├── calibration.py
-│   ├── market.py
-│   ├── synthetic.py
-│   └── data_sources/
-│       ├── schema.py
-│       ├── id_mapping.py
-│       ├── nba_stats.py
-│       ├── kaggle.py
-│       ├── basketball_reference.py
-│       └── pbpstats.py
-├── scripts/
-│   ├── fetch_bref.py              # downloads & cleans real schedules
-│   ├── produce_report.py          # makes all figures + metrics for paper
-│   ├── train_baseline.py
-│   ├── train_nn.py
-│   └── make_figures.py
-├── figures/                       # PNG + PDF figures
-├── data/processed/                # cleaned games + model preds
-└── tests/                         # 30 unit tests
 ```
 
