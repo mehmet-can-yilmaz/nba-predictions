@@ -1,7 +1,7 @@
 # NBA Game-Winner Predictions
 
-Group project for **Math 17 — Mathematics for Machine Learning**.
-Authors: Angel · Mehmet Can · Andrew
+Group project for **Math 17**.
+Authors: Mehmet Can · Andrew
 
 ## Headline result
 
